@@ -3,3 +3,4 @@ database.nosql
 package-lock.json
 node_modules/
 .idea/
+java/.gradle/
