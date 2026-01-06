@@ -1,18 +1,37 @@
 package com.example.demo.client;
 
+import org.apache.commons.text.RandomStringGenerator;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 @Controller
 public class ClientController {
+
+    private String accessToken = null;
+    private String state = null;
+    private final int STATE_LENGTH = 10;
+
+    private final Map<String, String > authServerEndpoints = Map.of(
+            "authorizationEndpoint", "http://localhost:9001/authorize",
+            "tokenEndpoint", "http://localhost:9001/token"
+    );
+
+    private final Map<String, String > clientConriguration = Map.of(
+            "clientId", "oauth-client-1",
+            "clientSecret", "oauth-client-secret-1",
+            "redirectUri", "http://localhost:9000/callback"
+    );
+
     @GetMapping(path = "/")
     public ResponseEntity<Resource> index() {
         Path file = Paths.get("../files/client/index.html");
@@ -23,5 +42,18 @@ public class ClientController {
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(resource);
+    }
+
+    @GetMapping(path = "/authorize")
+    public String authorize(RedirectAttributes redirectAttributes) {
+        accessToken = null;
+        state = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(STATE_LENGTH);
+
+        redirectAttributes.addAttribute("response_type", "code");
+        redirectAttributes.addAttribute("client_id", clientConriguration.get("clientId"));
+        redirectAttributes.addAttribute("redirect_uri", clientConriguration.get("redirectUri"));
+        redirectAttributes.addAttribute("state", state);
+
+        return "redirect:" + authServerEndpoints.get("authorizationEndpoint");
     }
 }
