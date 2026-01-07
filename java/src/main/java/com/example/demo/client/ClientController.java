@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.nio.file.Files;
@@ -55,5 +56,26 @@ public class ClientController {
         redirectAttributes.addAttribute("state", state);
 
         return "redirect:" + authServerEndpoints.get("authorizationEndpoint");
+    }
+
+    @GetMapping(path = "/callback")
+    public ResponseEntity<Resource> callback(@RequestParam(required = false) String error,
+                           @RequestParam(required = false) String code,
+                           @RequestParam String state) {
+
+        if (error != null) {
+            Path file = Paths.get("../files/client/error.html");
+            Resource resource = new FileSystemResource(file.toFile());
+            return ResponseEntity.badRequest().contentType(MediaType.TEXT_HTML).body(resource);
+        }
+
+        if (state == null || !state.equals(this.state)) {
+            Path file = Paths.get("../files/client/error.html");
+            Resource resource = new FileSystemResource(file.toFile());
+            return ResponseEntity.badRequest().contentType(MediaType.TEXT_HTML).body(resource);
+        }
+        Path file = Paths.get("../files/client/error.html");
+        Resource resource = new FileSystemResource(file.toFile());
+        return ResponseEntity.badRequest().contentType(MediaType.TEXT_HTML).body(resource);
     }
 }
