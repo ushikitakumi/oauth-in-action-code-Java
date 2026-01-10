@@ -35,7 +35,7 @@ public class ClientController {
 
     @GetMapping(path = "/")
     public ResponseEntity<Resource> index() {
-        Path file = Paths.get("../files/client/index.html");
+        Path file = Paths.get("../../files/client/index.html");
         if (!Files.exists(file)) {
             return ResponseEntity.notFound().build();
         }
@@ -64,17 +64,17 @@ public class ClientController {
                            @RequestParam String state) {
 
         if (error != null) {
-            Path file = Paths.get("../files/client/error.html");
+            Path file = Paths.get("../../files/client/error.html");
             Resource resource = new FileSystemResource(file.toFile());
             return ResponseEntity.badRequest().contentType(MediaType.TEXT_HTML).body(resource);
         }
 
         if (state == null || !state.equals(this.state)) {
-            Path file = Paths.get("../files/client/error.html");
+            Path file = Paths.get("../../files/client/error.html");
             Resource resource = new FileSystemResource(file.toFile());
             return ResponseEntity.badRequest().contentType(MediaType.TEXT_HTML).body(resource);
         }
-        Path file = Paths.get("../files/client/error.html");
+        Path file = Paths.get("../../files/client/error.html");
         Resource resource = new FileSystemResource(file.toFile());
         return ResponseEntity.badRequest().contentType(MediaType.TEXT_HTML).body(resource);
     }
