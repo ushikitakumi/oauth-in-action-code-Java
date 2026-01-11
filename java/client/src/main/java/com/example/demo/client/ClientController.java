@@ -6,11 +6,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -19,6 +19,7 @@ import java.util.Map;
 public class ClientController {
 
     private String accessToken = null;
+    private String scope = null;
     private String state = null;
     private final int STATE_LENGTH = 10;
 
@@ -34,15 +35,10 @@ public class ClientController {
     );
 
     @GetMapping(path = "/")
-    public ResponseEntity<Resource> index() {
-        Path file = Paths.get("../../files/client/index.html");
-        if (!Files.exists(file)) {
-            return ResponseEntity.notFound().build();
-        }
-        Resource resource = new FileSystemResource(file.toFile());
-        return ResponseEntity.ok()
-                .contentType(MediaType.TEXT_HTML)
-                .body(resource);
+    public String index(Model model) {
+        model.addAttribute("access_token", accessToken);
+        model.addAttribute("scope", scope);
+        return "index";
     }
 
     @GetMapping(path = "/authorize")
