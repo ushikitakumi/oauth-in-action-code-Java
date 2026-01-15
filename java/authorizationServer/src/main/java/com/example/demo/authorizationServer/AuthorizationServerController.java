@@ -1,4 +1,4 @@
-package com.example.demo.client;
+package com.example.demo.authorizationServer;
 
 import org.apache.commons.text.RandomStringGenerator;
 import org.springframework.http.MediaType;
