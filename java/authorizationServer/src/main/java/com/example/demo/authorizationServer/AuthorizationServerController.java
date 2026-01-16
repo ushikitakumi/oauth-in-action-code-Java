@@ -31,7 +31,8 @@ public class AuthorizationServerController {
     private final Map<String, String > clientConriguration = Map.of(
             "clientId", "oauth-client-1",
             "clientSecret", "oauth-client-secret-1",
-            "redirectUri", "http://localhost:9000/callback"
+            "redirectUri", "http://localhost:9000/callback",
+            "scope", "foo bar"
     );
 
     @GetMapping(path = "/")
