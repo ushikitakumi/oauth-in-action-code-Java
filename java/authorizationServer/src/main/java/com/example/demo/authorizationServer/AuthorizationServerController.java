@@ -37,8 +37,8 @@ public class AuthorizationServerController {
 
     @GetMapping(path = "/")
     public String index(Model model) {
-        model.addAttribute("access_token", accessToken);
-        model.addAttribute("scope", scope);
+        model.addAttribute("clients", clientConriguration);
+        model.addAttribute("authServer", authServerEndpoints);
         return "index";
     }
 
