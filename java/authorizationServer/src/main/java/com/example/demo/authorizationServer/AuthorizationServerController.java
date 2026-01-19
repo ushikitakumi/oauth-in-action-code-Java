@@ -12,8 +12,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Controller
 public class AuthorizationServerController {
@@ -35,6 +40,8 @@ public class AuthorizationServerController {
             "scope", "foo bar"
     );
 
+    private final Map<String, Map<String, String>> requests = new ConcurrentHashMap<>();
+
     @GetMapping(path = "/")
     public String index(Model model) {
         model.addAttribute("clients", clientConriguration);
@@ -43,17 +50,56 @@ public class AuthorizationServerController {
     }
 
     @GetMapping(path = "/authorize")
-    public String authorize(RedirectAttributes redirectAttributes) {
-        accessToken = null;
-        state = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(STATE_LENGTH);
+    public String authorize(@RequestParam Map<String, String> params, Model model) {
+        String clientId = params.get("client_id");
+        String redirectUri = params.get("redirect_uri");
+        String reqScope = params.get("scope");
 
-        redirectAttributes.addAttribute("response_type", "code");
-        redirectAttributes.addAttribute("client_id", clientConriguration.get("clientId"));
-        redirectAttributes.addAttribute("redirect_uri", clientConriguration.get("redirectUri"));
-        redirectAttributes.addAttribute("state", state);
+        // 単純なクライアント取得 (このプロジェクトでは1クライアントの固定設定を使用)
+        if (clientId == null || !clientId.equals(clientConriguration.get("clientId"))) {
+            model.addAttribute("error", "Unknown client");
+            return "error";
+        }
 
-        return "redirect:" + authServerEndpoints.get("authorizationEndpoint");
+        // redirect_uri の検証
+        String allowedRedirect = clientConriguration.get("redirectUri");
+        if (redirectUri == null || !redirectUri.equals(allowedRedirect)) {
+            model.addAttribute("error", "Invalid redirect URI");
+            return "error";
+        }
+
+        // スコープ検証: 要求スコープがクライアント許可スコープのサブセットかチェック
+        List<String> requestedScopes = reqScope != null && !reqScope.isEmpty()
+                ? Arrays.stream(reqScope.split(" ")).collect(Collectors.toList())
+                : List.of();
+        List<String> clientScopes = clientConriguration.get("scope") != null
+                ? Arrays.stream(clientConriguration.get("scope").split(" ")).toList()
+                : List.of();
+
+        if (!requestedScopes.isEmpty()) {
+            boolean invalid = requestedScopes.stream().anyMatch(s -> !clientScopes.contains(s));
+            if (invalid) {
+                // invalid_scope を redirect_uri に付与してリダイレクト
+                String redirectWithError = UriComponentsBuilder.fromUriString(redirectUri)
+                        .queryParam("error", "invalid_scope")
+                        .build()
+                        .toUriString();
+                return "redirect:" + redirectWithError;
+            }
+        }
+
+        // リクエストID を生成して保存（承認ページから参照するため）
+        String reqid = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(8);
+        requests.put(reqid, params);
+
+        // approve テンプレートに表示する属性をセット
+        model.addAttribute("client", clientConriguration);
+        model.addAttribute("reqid", reqid);
+        model.addAttribute("scope", requestedScopes);
+
+        return "approve";
     }
+
 
     @GetMapping(path = "/callback")
     public String callback(@RequestParam(required = false) String error,
