@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -98,47 +99,5 @@ public class AuthorizationServerController {
         model.addAttribute("scope", requestedScopes);
 
         return "approve";
-    }
-
-
-    @GetMapping(path = "/callback")
-    public String callback(@RequestParam(required = false) String error,
-                           @RequestParam(required = false) String code,
-                           @RequestParam String state,
-                           Model model) {
-
-        if (error != null) {
-            model.addAttribute("error", error);
-            return "error";
-        }
-
-        if (state == null || !state.equals(this.state)) {
-            model.addAttribute("error", "State value did not match");
-            return "error";
-        }
-
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("grant_type", "authorization_code");
-        formData.add("code", code);
-        formData.add("redirect_uri", clientConriguration.get("redirectUri"));
-
-        ResponseEntity<Map> response = RestClient.create().post()
-                .uri(authServerEndpoints.get("tokenEndpoint"))
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .headers(h -> h.setBasicAuth(clientConriguration.get("clientId"), clientConriguration.get("clientSecret")))
-                .body(formData)
-                .retrieve()
-                .toEntity(Map.class);
-
-        int statusCodeValue = response.getStatusCode().value();
-
-        if (statusCodeValue >= 200 && statusCodeValue < 300) {
-            model.addAttribute("access_token", response.getBody().get("access_token"));
-            model.addAttribute("scope", scope);
-            return "data";
-        } else {
-            model.addAttribute("error", "Unable to fetch access token, server response: " + statusCodeValue);
-            return "error";
-        }
     }
 }
