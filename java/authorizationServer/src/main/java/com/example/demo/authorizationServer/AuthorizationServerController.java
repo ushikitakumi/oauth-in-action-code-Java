@@ -100,4 +100,36 @@ public class AuthorizationServerController {
 
         return "approve";
     }
+
+    @PostMapping(path = "/approve")
+    public String approve(@RequestParam String reqid,
+                          @RequestParam String action,
+                          Model model) {
+        Map<String, String> reqParams = requests.get(reqid);
+        requests.remove(reqid);
+        if (reqParams == null) {
+            model.addAttribute("error", "No matching authorization request");
+            return "error";
+        }
+
+        String redirectUri = reqParams.get("redirect_uri");
+        if (action.equals("approve")) {
+            // 承認された場合、認可コードを生成して redirect_uri にリダイレクト
+            String authorizationCode = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(12);
+            String redirectWithCode = UriComponentsBuilder.fromUriString(redirectUri)
+                    .queryParam("code", authorizationCode)
+                    .queryParam("state", reqParams.get("state"))
+                    .build()
+                    .toUriString();
+            return "redirect:" + redirectWithCode;
+        } else {
+            // 拒否された場合、error を redirect_uri に付与してリダイレクト
+            String redirectWithError = UriComponentsBuilder.fromUriString(redirectUri)
+                    .queryParam("error", "access_denied")
+                    .queryParam("state", reqParams.get("state"))
+                    .build()
+                    .toUriString();
+            return "redirect:" + redirectWithError;
+        }
+    }
 }
