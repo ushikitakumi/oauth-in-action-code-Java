@@ -103,7 +103,7 @@ public class AuthorizationServerController {
 
     @PostMapping(path = "/approve")
     public String approve(@RequestParam String reqid,
-                          @RequestParam String action,
+                          @RequestParam String approve,
                           Model model) {
         Map<String, String> reqParams = requests.get(reqid);
         requests.remove(reqid);
@@ -113,7 +113,16 @@ public class AuthorizationServerController {
         }
 
         String redirectUri = reqParams.get("redirect_uri");
-        if (action.equals("approve")) {
+        if (approve != null) {
+            if (reqParams.get("reponse_type") == null || !reqParams.get("response_type").equals("code")) {
+                // unsupported_response_type を redirect_uri に付与してリダイレクト
+                String redirectWithError = UriComponentsBuilder.fromUriString(redirectUri)
+                        .queryParam("error", "unsupported_response_type")
+                        .queryParam("state", reqParams.get("state"))
+                        .build()
+                        .toUriString();
+                return "redirect:" + redirectWithError;
+            }
             // 承認された場合、認可コードを生成して redirect_uri にリダイレクト
             String authorizationCode = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(12);
             String redirectWithCode = UriComponentsBuilder.fromUriString(redirectUri)
