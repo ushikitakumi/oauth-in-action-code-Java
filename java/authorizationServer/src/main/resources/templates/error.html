@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -37,8 +37,9 @@
     <div class="container">
 
       <div class="jumbotron">
-		  <h2 class="text-danger">Error</h2>
-		  <%- error %>
+	  <h2 class="text-danger">Error</h2>
+	  <!-- EJS 表記を Thymeleaf に置換 -->
+	  <div th:text="${error}"></div>
       </div>
 
     </div><!-- /.container -->
