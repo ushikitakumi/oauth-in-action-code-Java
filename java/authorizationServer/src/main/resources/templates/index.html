@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -38,25 +38,26 @@
 
       <div class="jumbotron">
 		  <h2>Client information:</h2>
-		  <% _.each(clients, function(client) { %>
-		  <ul>
-			  <li><b>client_id:</b> <code><%- client.client_id %></code></li>
-			  <li><b>client_secret:</b> <code><%- client.client_secret %></code></li>
-			  <li><b>scope:</b> <code><%- client.scope %></code></li>
-			  <li><b>redirect_uri:</b> <code><%- client.redirect_uris %></code></li>
-		   </ul>
-		   <% }); %>
+		  <div th:each="client : ${clients}">
+              <ul>
+                  <li><b>client_id:</b> <code th:text="${client.client_id}"></code></li>
+                  <li><b>client_secret:</b> <code th:text="${client.client_secret}"></code></li>
+                  <li><b>scope:</b> <code th:text="${client.client_secret}"></code></li>
+                  <li><b>redirect_uri:</b> <code th:text="${client.redirect_uris}"></code></li>
+               </ul>
+          </div>
+
 		   <h2>Server information:</h2>
 		  <ul>
-			  <li><b>authorization_endpoint:</b> <code><%- authServer.authorizationEndpoint %></code></li>
-			  <li><b>token_endpoint:</b> <code><%- authServer.tokenEndpoint %></code></li>
+			  <li><b>authorization_endpoint:</b> <code th:text="${authServer.authorizationEndpoint}"></code></li>
+			  <li><b>token_endpoint:</b> <code th:text="${authServer.tokenEndpoint}"></code></li>
 		   </ul>
       </div>
 
     </div><!-- /.container -->
 
-	
-	
+
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
