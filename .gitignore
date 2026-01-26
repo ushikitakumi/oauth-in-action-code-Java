@@ -5,5 +5,7 @@ node_modules/
 .idea/
 java/client/.gradle/
 java/client/build/
+java/client/bin/
 java/authorizationServer/.gradle/
 java/authorizationServer/build/
+java/authorizationServer/bin/
