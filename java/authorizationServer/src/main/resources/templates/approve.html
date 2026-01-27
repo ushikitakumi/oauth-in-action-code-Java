@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -38,16 +38,20 @@
 
       <div class="jumbotron">
 		  <h2>Approve this client?</h2>
-		  <% if (client.client_name) { %>
-		  <p><b>Name:</b> <code><%- client.client_name %></code></p>
-		  <% } %>
-		  <p><b>ID:</b> <code><%- client.client_id %></code></p>
-		  <% if (client.client_uri) { %>
-		  <p><b>URI:</b> <code><%- client.client_uri %></code></p>
-		  <% } %>
-		  <% if (client.logo_uri) { %>
-		  <p><b>logo:</b> <img src="<%- client.logo_uri %>" /></p>
-		  <% } %>
+
+		  <th:block th:if="${client.clientName}">
+			  <p><b>Name:</b> <code th:text="${client.clientName}">Name Placeholder</code></p>
+		  </th:block>
+
+		  <p><b>ID:</b> <code th:text="${client.clientId}">ID Placeholder</code></p>
+
+		  <p th:if="${client.clientUri}">
+			  <b>URI:</b> <code th:text="${client.clientUri}">URI Placeholder</code>
+		  </p>
+
+		  <p th:if="${client.logoUri}">
+			  <b>logo:</b> <img th:src="${client.logoUri}" alt="client logo" />
+		  </p>
 		  
 		   <form class="form" action="/approve" method="POST">
 			   <input type="hidden" name="reqid" value="<%- reqid %>">
