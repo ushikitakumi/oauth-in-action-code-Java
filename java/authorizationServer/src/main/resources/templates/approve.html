@@ -52,20 +52,26 @@
 		  <p th:if="${client.logoUri}">
 			  <b>logo:</b> <img th:src="${client.logoUri}" alt="client logo" />
 		  </p>
-		  
-		   <form class="form" action="/approve" method="POST">
-			   <input type="hidden" name="reqid" value="<%- reqid %>">
-			   <% if (scope) { %>
-			   <p>The client is requesting access to the following:</p>
-			   <ul>
-			   <% _.each(scope, function(s) { %>
-			   	  <li><input type="checkbox" name="scope_<%- s %>" id="scope_<%- s %>" checked="checked"> <label for="scope_<%- s %>"><%- s %></label></li>
-			   <% }); %>
-		       </ul>
-			   <% } %>
-			   <input type="submit" class="btn btn-success" name="approve" value="Approve">
-			   <input type="submit" class="btn btn-danger" name="deny" value="Deny">
-		   </form>
+
+		  <form class="form" th:action="@{/approve}" method="POST">
+			  <input type="hidden" name="reqid" th:value="${reqid}">
+
+			  <div th:if="${scope != null}">
+				  <p>The client is requesting access to the following:</p>
+				  <ul>
+					  <li th:each="s : ${scope}">
+						  <input type="checkbox"
+								 th:name="'scope_' + ${s}"
+								 th:id="'scope_' + ${s}"
+								 checked="checked">
+						  <label th:for="'scope_' + ${s}" th:text="${s}"></label>
+					  </li>
+				  </ul>
+			  </div>
+
+			  <input type="submit" class="btn btn-success" name="approve" value="Approve">
+			  <input type="submit" class="btn btn-danger" name="deny" value="Deny">
+		  </form>
       </div>
 
     </div><!-- /.container -->
