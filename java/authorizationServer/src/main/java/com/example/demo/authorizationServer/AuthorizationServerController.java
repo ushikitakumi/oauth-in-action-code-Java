@@ -91,7 +91,7 @@ public class AuthorizationServerController {
         }
 
         // リクエストID を生成して保存（承認ページから参照するため）
-        String reqid = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(8);
+        String reqid = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(8);
         requests.put(reqid, params);
 
         // approve テンプレートに表示する属性をセット
@@ -125,7 +125,7 @@ public class AuthorizationServerController {
                 return "redirect:" + redirectWithError;
             }
             // 承認された場合、認可コードを生成して redirect_uri にリダイレクト
-            String authorizationCode = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(12);
+            String authorizationCode = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(12);
 
             // 生成した認可コードを保存（/token で交換可能にするため）
             authorizationCodes.put(authorizationCode, reqParams);
@@ -203,8 +203,8 @@ public class AuthorizationServerController {
             }
 
             // トークンを作成
-            String accessToken = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(24);
-            String refreshToken = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(24);
+            String accessToken = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
+            String refreshToken = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
 
             // リフレッシュトークンを保存
             refreshTokens.put(refreshToken, Map.of("client_id", clientId, "scope", saved.getOrDefault("scope", "")));
@@ -233,8 +233,8 @@ public class AuthorizationServerController {
             }
 
             // 新しいアクセストークンを発行（リフレッシュトークンはローテーションしてもよいが簡単のため再発行）
-            String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(24);
-            String newRefresh = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(24);
+            String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
+            String newRefresh = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
             // 旧リフレッシュトークンを削除して新しいものを保存
             refreshTokens.remove(rtoken);
             refreshTokens.put(newRefresh, Map.of("client_id", clientId, "scope", saved.getOrDefault("scope", "")));
@@ -250,7 +250,7 @@ public class AuthorizationServerController {
 
         // client_credentials グラント
         if (grantType.equals("client_credentials")) {
-            String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(24);
+            String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
             Map<String, Object> resp = Map.of(
                     "access_token", newAccess,
                     "token_type", "Bearer",
