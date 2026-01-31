@@ -21,11 +21,6 @@ import java.util.stream.Collectors;
 @Controller
 public class AuthorizationServerController {
 
-    private String accessToken = null;
-    private String scope = null;
-    private String state = null;
-    private final int STATE_LENGTH = 10;
-
     private final Map<String, String > authServerEndpoints = Map.of(
             "authorizationEndpoint", "http://localhost:9001/authorize",
             "tokenEndpoint", "http://localhost:9001/token"
