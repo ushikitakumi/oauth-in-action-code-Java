@@ -177,81 +177,85 @@ public class AuthorizationServerController {
         }
 
         // authorization_code グラント
-        if (grantType.equals("authorization_code")) {
-            String code = formParams.getFirst("code");
-            if (code == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "invalid_request", "error_description", "code is required"));
-            }
-            Map<String, String> saved = authorizationCodes.remove(code);
-            if (saved == null) {
-                return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "authorization code is invalid or has been used"));
-            }
-            // client_id と redirect_uri の照合
-            String codeClientId = saved.get("client_id");
-            String codeRedirect = saved.get("redirect_uri");
-            if (!clientId.equals(codeClientId)) {
-                return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "client_id does not match authorization code"));
-            }
-            String redirectUri = formParams.getFirst("redirect_uri");
-            if (redirectUri != null && !redirectUri.equals(codeRedirect)) {
-                return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "redirect_uri mismatch"));
-            }
+        switch (grantType) {
+            case "authorization_code" -> {
+                String code = formParams.getFirst("code");
+                if (code == null) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "invalid_request", "error_description", "code is required"));
+                }
+                Map<String, String> saved = authorizationCodes.remove(code);
+                if (saved == null) {
+                    return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "authorization code is invalid or has been used"));
+                }
+                // client_id と redirect_uri の照合
+                String codeClientId = saved.get("client_id");
+                String codeRedirect = saved.get("redirect_uri");
+                if (!clientId.equals(codeClientId)) {
+                    return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "client_id does not match authorization code"));
+                }
+                String redirectUri = formParams.getFirst("redirect_uri");
+                if (redirectUri != null && !redirectUri.equals(codeRedirect)) {
+                    return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "redirect_uri mismatch"));
+                }
 
-            // トークンを作成
-            String accessToken = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
-            String refreshToken = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
+                // トークンを作成
+                String accessToken = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
+                String refreshToken = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
 
-            // リフレッシュトークンを保存
-            refreshTokens.put(refreshToken, Map.of("client_id", clientId, "scope", saved.getOrDefault("scope", "")));
+                // リフレッシュトークンを保存
+                refreshTokens.put(refreshToken, Map.of("client_id", clientId, "scope", saved.getOrDefault("scope", "")));
 
-            Map<String, Object> resp = Map.of(
-                    "access_token", accessToken,
-                    "token_type", "Bearer",
-                    "expires_in", 3600,
-                    "refresh_token", refreshToken
-            );
-            return ResponseEntity.ok(resp);
-        }
-
-        // refresh_token グラント
-        if (grantType.equals("refresh_token")) {
-            String rtoken = formParams.getFirst("refresh_token");
-            if (rtoken == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "invalid_request", "error_description", "refresh_token is required"));
-            }
-            Map<String, String> saved = refreshTokens.get(rtoken);
-            if (saved == null) {
-                return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "refresh token invalid"));
-            }
-            if (!clientId.equals(saved.get("client_id"))) {
-                return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "client_id does not match refresh token"));
+                Map<String, Object> resp = Map.of(
+                        "access_token", accessToken,
+                        "token_type", "Bearer",
+                        "expires_in", 3600,
+                        "refresh_token", refreshToken
+                );
+                return ResponseEntity.ok(resp);
             }
 
-            // 新しいアクセストークンを発行（リフレッシュトークンはローテーションしてもよいが簡単のため再発行）
-            String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
-            String newRefresh = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
-            // 旧リフレッシュトークンを削除して新しいものを保存
-            refreshTokens.remove(rtoken);
-            refreshTokens.put(newRefresh, Map.of("client_id", clientId, "scope", saved.getOrDefault("scope", "")));
 
-            Map<String, Object> resp = Map.of(
-                    "access_token", newAccess,
-                    "token_type", "Bearer",
-                    "expires_in", 3600,
-                    "refresh_token", newRefresh
-            );
-            return ResponseEntity.ok(resp);
-        }
+            // refresh_token グラント
+            case "refresh_token" -> {
+                String rtoken = formParams.getFirst("refresh_token");
+                if (rtoken == null) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "invalid_request", "error_description", "refresh_token is required"));
+                }
+                Map<String, String> saved = refreshTokens.get(rtoken);
+                if (saved == null) {
+                    return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "refresh token invalid"));
+                }
+                if (!clientId.equals(saved.get("client_id"))) {
+                    return ResponseEntity.status(400).body(Map.of("error", "invalid_grant", "error_description", "client_id does not match refresh token"));
+                }
 
-        // client_credentials グラント
-        if (grantType.equals("client_credentials")) {
-            String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
-            Map<String, Object> resp = Map.of(
-                    "access_token", newAccess,
-                    "token_type", "Bearer",
-                    "expires_in", 3600
-            );
-            return ResponseEntity.ok(resp);
+                // 新しいアクセストークンを発行（リフレッシュトークンはローテーションしてもよいが簡単のため再発行）
+                String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
+                String newRefresh = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
+                // 旧リフレッシュトークンを削除して新しいものを保存
+                refreshTokens.remove(rtoken);
+                refreshTokens.put(newRefresh, Map.of("client_id", clientId, "scope", saved.getOrDefault("scope", "")));
+
+                Map<String, Object> resp = Map.of(
+                        "access_token", newAccess,
+                        "token_type", "Bearer",
+                        "expires_in", 3600,
+                        "refresh_token", newRefresh
+                );
+                return ResponseEntity.ok(resp);
+            }
+
+
+            // client_credentials グラント
+            case "client_credentials" -> {
+                String newAccess = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(24);
+                Map<String, Object> resp = Map.of(
+                        "access_token", newAccess,
+                        "token_type", "Bearer",
+                        "expires_in", 3600
+                );
+                return ResponseEntity.ok(resp);
+            }
         }
 
         // 未対応の grant_type
