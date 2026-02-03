@@ -21,7 +21,6 @@ public class ClientController {
     private String accessToken = null;
     private String scope = null;
     private String state = null;
-    private final int STATE_LENGTH = 10;
 
     private final Map<String, String > authServerEndpoints = Map.of(
             "authorizationEndpoint", "http://localhost:9001/authorize",
@@ -44,6 +43,7 @@ public class ClientController {
     @GetMapping(path = "/authorize")
     public String authorize(RedirectAttributes redirectAttributes) {
         accessToken = null;
+        int STATE_LENGTH = 10;
         state = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(STATE_LENGTH);
 
         redirectAttributes.addAttribute("response_type", "code");
