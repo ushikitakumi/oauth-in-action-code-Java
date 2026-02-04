@@ -19,7 +19,7 @@ import java.util.Map;
 public class ClientController {
 
     private String accessToken = null;
-    private String scope = null;
+    private final String scope = null;
     private String state = null;
 
     private final Map<String, String > authServerEndpoints = Map.of(
