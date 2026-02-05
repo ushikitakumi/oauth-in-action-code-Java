@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -27,7 +26,7 @@ public class ClientController {
             "tokenEndpoint", "http://localhost:9001/token"
     );
 
-    private final Map<String, String > clientConriguration = Map.of(
+    private final Map<String, String > clientConfiguration = Map.of(
             "clientId", "oauth-client-1",
             "clientSecret", "oauth-client-secret-1",
             "redirectUri", "http://localhost:9000/callback"
@@ -47,8 +46,8 @@ public class ClientController {
         state = new RandomStringGenerator.Builder().withinRange('a', 'z').get().generate(STATE_LENGTH);
 
         redirectAttributes.addAttribute("response_type", "code");
-        redirectAttributes.addAttribute("client_id", clientConriguration.get("clientId"));
-        redirectAttributes.addAttribute("redirect_uri", clientConriguration.get("redirectUri"));
+        redirectAttributes.addAttribute("client_id", clientConfiguration.get("clientId"));
+        redirectAttributes.addAttribute("redirect_uri", clientConfiguration.get("redirectUri"));
         redirectAttributes.addAttribute("state", state);
 
         return "redirect:" + authServerEndpoints.get("authorizationEndpoint");
@@ -73,12 +72,12 @@ public class ClientController {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
         formData.add("code", code);
-        formData.add("redirect_uri", clientConriguration.get("redirectUri"));
+        formData.add("redirect_uri", clientConfiguration.get("redirectUri"));
 
         ResponseEntity<Map> response = RestClient.create().post()
                 .uri(authServerEndpoints.get("tokenEndpoint"))
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .headers(h -> h.setBasicAuth(clientConriguration.get("clientId"), clientConriguration.get("clientSecret")))
+                .headers(h -> h.setBasicAuth(clientConfiguration.get("clientId"), clientConfiguration.get("clientSecret")))
                 .body(formData)
                 .retrieve()
                 .toEntity(Map.class);
