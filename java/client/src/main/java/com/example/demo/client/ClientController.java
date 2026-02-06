@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -31,6 +32,9 @@ public class ClientController {
             "clientSecret", "oauth-client-secret-1",
             "redirectUri", "http://localhost:9000/callback"
     );
+
+    // protected resource URL (matches client.js)
+    private final String protectedResource = "http://localhost:9002/resource";
 
     @GetMapping(path = "/")
     public String index(Model model) {
@@ -90,6 +94,41 @@ public class ClientController {
             return "data";
         } else {
             model.addAttribute("error", "Unable to fetch access token, server response: " + statusCodeValue);
+            return "error";
+        }
+    }
+
+    // Implement /fetch_resource similar to client.js
+    @GetMapping(path = "/fetch_resource")
+    public String fetchResource(Model model) {
+        if (accessToken == null) {
+            model.addAttribute("error", "Missing Access Token");
+            return "error";
+        }
+
+        try {
+            ResponseEntity<Map> resourceResponse = WebClient.create()
+                    .post()
+                    .uri(protectedResource)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .toEntity(Map.class)
+                    .block();
+
+            if (resourceResponse != null && resourceResponse.getStatusCode().is2xxSuccessful()) {
+                model.addAttribute("resource", resourceResponse.getBody());
+                return "data";
+            } else {
+                // token invalid or other error from resource server
+                accessToken = null;
+                int status = resourceResponse != null ? resourceResponse.getStatusCode().value() : 500;
+                model.addAttribute("error", status);
+                return "error";
+            }
+        } catch (Exception ex) {
+            // connection problems, etc.
+            accessToken = null;
+            model.addAttribute("error", ex.getMessage());
             return "error";
         }
     }
