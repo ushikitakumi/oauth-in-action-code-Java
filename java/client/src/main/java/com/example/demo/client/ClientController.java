@@ -33,9 +33,6 @@ public class ClientController {
             "redirectUri", "http://localhost:9000/callback"
     );
 
-    // protected resource URL (matches client.js)
-    private final String protectedResource = "http://localhost:9002/resource";
-
     @GetMapping(path = "/")
     public String index(Model model) {
         model.addAttribute("access_token", accessToken);
@@ -107,6 +104,8 @@ public class ClientController {
         }
 
         try {
+            // protected resource URL (matches client.js)
+            String protectedResource = "http://localhost:9002/resource";
             ResponseEntity<Map> resourceResponse = WebClient.create()
                     .post()
                     .uri(protectedResource)
