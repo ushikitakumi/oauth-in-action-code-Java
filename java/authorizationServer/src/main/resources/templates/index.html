@@ -40,10 +40,10 @@
 		  <h2>Client information:</h2>
 		  <div th:each="client : ${clients}">
               <ul>
-                  <li><b>client_id:</b> <code th:text="${client.client_id}"></code></li>
-                  <li><b>client_secret:</b> <code th:text="${client.client_secret}"></code></li>
-                  <li><b>scope:</b> <code th:text="${client.client_secret}"></code></li>
-                  <li><b>redirect_uri:</b> <code th:text="${client.redirect_uris}"></code></li>
+                  <li><b>client_id:</b> <code th:text="${client.clientId}"></code></li>
+                  <li><b>client_secret:</b> <code th:text="${client.clientSecret}"></code></li>
+                  <li><b>scope:</b> <code th:text="${client.scope}"></code></li>
+                  <li><b>redirect_uri:</b> <code th:text="${client.redirectUri}"></code></li>
                </ul>
           </div>
 
