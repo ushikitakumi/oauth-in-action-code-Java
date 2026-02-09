@@ -26,7 +26,7 @@ public class AuthorizationServerController {
             "tokenEndpoint", "http://localhost:9001/token"
     );
 
-    private final Map<String, String > clientConriguration = Map.of(
+    private final Map<String, String > clientConfiguration = Map.of(
             "clientId", "oauth-client-1",
             "clientSecret", "oauth-client-secret-1",
             "redirectUri", "http://localhost:9000/callback",
@@ -41,7 +41,7 @@ public class AuthorizationServerController {
 
     @GetMapping(path = "/")
     public String index(Model model) {
-        model.addAttribute("clients", clientConriguration);
+        model.addAttribute("clients", clientConfiguration);
         model.addAttribute("authServer", authServerEndpoints);
         return "index";
     }
@@ -53,13 +53,13 @@ public class AuthorizationServerController {
         String reqScope = params.get("scope");
 
         // 単純なクライアント取得 (このプロジェクトでは1クライアントの固定設定を使用)
-        if (clientId == null || !clientId.equals(clientConriguration.get("clientId"))) {
+        if (clientId == null || !clientId.equals(clientConfiguration.get("clientId"))) {
             model.addAttribute("error", "Unknown client");
             return "error";
         }
 
         // redirect_uri の検証
-        String allowedRedirect = clientConriguration.get("redirectUri");
+        String allowedRedirect = clientConfiguration.get("redirectUri");
         if (redirectUri == null || !redirectUri.equals(allowedRedirect)) {
             model.addAttribute("error", "Invalid redirect URI");
             return "error";
@@ -69,8 +69,8 @@ public class AuthorizationServerController {
         List<String> requestedScopes = reqScope != null && !reqScope.isEmpty()
                 ? Arrays.stream(reqScope.split(" ")).collect(Collectors.toList())
                 : List.of();
-        List<String> clientScopes = clientConriguration.get("scope") != null
-                ? Arrays.stream(clientConriguration.get("scope").split(" ")).toList()
+        List<String> clientScopes = clientConfiguration.get("scope") != null
+                ? Arrays.stream(clientConfiguration.get("scope").split(" ")).toList()
                 : List.of();
 
         if (!requestedScopes.isEmpty()) {
@@ -90,7 +90,7 @@ public class AuthorizationServerController {
         requests.put(reqid, params);
 
         // approve テンプレートに表示する属性をセット
-        model.addAttribute("client", clientConriguration);
+        model.addAttribute("client", clientConfiguration);
         model.addAttribute("reqid", reqid);
         model.addAttribute("scope", requestedScopes);
 
@@ -167,7 +167,7 @@ public class AuthorizationServerController {
             clientSecret = formParams.getFirst("client_secret");
         }
 
-        if (clientId == null || clientSecret == null || !clientId.equals(clientConriguration.get("clientId")) || !clientSecret.equals(clientConriguration.get("clientSecret"))) {
+        if (clientId == null || clientSecret == null || !clientId.equals(clientConfiguration.get("clientId")) || !clientSecret.equals(clientConfiguration.get("clientSecret"))) {
             return ResponseEntity.status(401).body(Map.of("error", "invalid_client"));
         }
 
