@@ -110,7 +110,7 @@ public class AuthorizationServerController {
 
         String redirectUri = reqParams.get("redirect_uri");
         if (approve != null) {
-            if (reqParams.get("reponse_type") == null || !reqParams.get("response_type").equals("code")) {
+            if (reqParams.get("response_type") == null || !reqParams.get("response_type").equals("code")) {
                 // unsupported_response_type を redirect_uri に付与してリダイレクト
                 String redirectWithError = UriComponentsBuilder.fromUriString(redirectUri)
                         .queryParam("error", "unsupported_response_type")
