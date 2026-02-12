@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Controller
 public class ClientController {
@@ -86,7 +87,7 @@ public class ClientController {
         int statusCodeValue = response.getStatusCode().value();
 
         if (statusCodeValue >= 200 && statusCodeValue < 300) {
-            model.addAttribute("access_token", response.getBody().get("access_token"));
+            model.addAttribute("access_token", Objects.requireNonNull(response.getBody()).get("access_token"));
             model.addAttribute("scope", scope);
             return "data";
         } else {
